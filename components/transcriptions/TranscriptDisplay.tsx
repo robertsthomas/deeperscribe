@@ -41,7 +41,8 @@ export function TranscriptDisplay({ className, highlight }: TranscriptDisplayPro
     transcriptTurns,
     isTranscribing,
     isFormatting,
-    isExtracting
+    isExtracting,
+    isGeneratingKeyMoments
   } = useTranscription({ patientId })
   const { doctorName, nameVisibility } = useSettings()
   const transcript = formattedTranscript || capturedText || ''
@@ -60,47 +61,15 @@ export function TranscriptDisplay({ className, highlight }: TranscriptDisplayPro
 
   return (
     <div className={cn("space-y-3 leading-relaxed", className)}>
-      {hasFormattedSpeakers ? (
-        // Render formatted turns
-        turns.map((turn, idx) => (
-          <TranscriptTurn 
-            key={`${turn.speaker}-${idx}-${turn.text.slice(0, 12)}`}
-            turn={turn}
-            highlight={effectiveHighlight}
-          />
-        ))
-      ) : (
-        // Loading UI while speakers are being formatted
-        <div>
-          <TranscriptDisplaySkeleton />
-          <div className="mt-3 text-sm text-muted-foreground flex items-center justify-center gap-2 w-full">
-            <LoadingSpinner size="sm" />
-            <span>
-              {isTranscribing
-                ? 'Transcribing…'
-                : isFormatting
-                ? 'Formatting transcript…'
-                : isExtracting
-                ? 'Extracting…'
-                : 'Processing…'}
-            </span>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-export function TranscriptDisplaySkeleton() {
-  return (
-    <div className="space-y-3">
-      {Array.from({ length: 3 }, (_, i) => (
-        <div key={`skeleton-${Date.now()}-${i}`} className="space-y-2">
-          <div className="h-4 bg-muted rounded animate-pulse w-20" />
-          <div className="h-4 bg-muted rounded animate-pulse" />
-          <div className="h-4 bg-muted rounded animate-pulse w-3/4" />
-        </div>
+      {turns.map((turn, idx) => (
+        <TranscriptTurn 
+          key={`${turn.speaker}-${idx}-${turn.text.slice(0, 12)}`}
+          turn={turn}
+          highlight={effectiveHighlight}
+        />
       ))}
+
+      {/* Processing message moved to TranscriptArea overlay */}
     </div>
   )
 }

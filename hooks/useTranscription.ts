@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useIsMutating } from '@tanstack/react-query'
 import useSpeechToText, { type ResultType } from 'react-hook-speech-to-text'
 import { useAppStore } from '@/lib/store'
 import { generateTranscriptionId } from '@/lib/constants'
@@ -76,6 +76,7 @@ export function useTranscription({
 
   // API mutations
   const formatMutation = useMutation({
+    mutationKey: ['format', patientId],
     mutationFn: async (transcript: string) => {
       const response = await fetch('/api/format-transcript', {
         method: 'POST',
@@ -112,6 +113,7 @@ export function useTranscription({
   })
 
   const extractMutation = useMutation({
+    mutationKey: ['extract', patientId],
     mutationFn: async (transcript: string): Promise<ExtractResponse> => {
       const response = await fetch('/api/extract', {
         method: 'POST',
@@ -129,6 +131,7 @@ export function useTranscription({
   })
 
   const keyMomentsMutation = useMutation({
+    mutationKey: ['key-moments', patientId],
     mutationFn: async (transcript: string) => {
       const response = await fetch('/api/key-moments', {
         method: 'POST',
@@ -149,6 +152,7 @@ export function useTranscription({
   })
 
   const trialsMutation = useMutation({
+    mutationKey: ['trials', patientId],
     mutationFn: async (patientProfile: ExtractResponse['patientProfile']): Promise<TrialsResponse> => {
       const response = await fetch('/api/trials', {
         method: 'POST',
@@ -171,6 +175,17 @@ export function useTranscription({
       onTrialsReady?.(data)
     }
   })
+
+  // Global processing flags (visible across all hook instances)
+  const formattingCount = useIsMutating({ mutationKey: ['format', patientId] })
+  const extractingCount = useIsMutating({ mutationKey: ['extract', patientId] })
+  const keyMomentsCount = useIsMutating({ mutationKey: ['key-moments', patientId] })
+  const trialsCount = useIsMutating({ mutationKey: ['trials', patientId] })
+
+  const isFormattingGlobal = formattingCount > 0
+  const isExtractingGlobal = extractingCount > 0
+  const isGeneratingKeyMomentsGlobal = isGeneratingKeyMoments || keyMomentsCount > 0
+  const isBusyGlobal = isTranscribing || isFormattingGlobal || isExtractingGlobal || isGeneratingKeyMomentsGlobal || trialsCount > 0
 
   // Transcribe with Gemini
   const transcribeWithGemini = useCallback(async (audioBlob: Blob) => {
@@ -455,11 +470,11 @@ export function useTranscription({
     
     // Processing
     transcriptTurns,
-    isGeneratingKeyMoments,
-    isBusy: formatMutation.isPending || extractMutation.isPending || trialsMutation.isPending || isTranscribing,
+    isBusy: isBusyGlobal,
     isTranscribing,
-    isFormatting: formatMutation.isPending,
-    isExtracting: extractMutation.isPending,
+    isFormatting: isFormattingGlobal,
+    isExtracting: isExtractingGlobal,
+    isGeneratingKeyMoments: isGeneratingKeyMomentsGlobal,
     
     // Actions
     reset,

@@ -20,12 +20,23 @@ export function KeyMoments({ patientId, onMomentClick }: KeyMomentsProps) {
 	if (isGenerating) {
 		return (
 			<div className="space-y-3">
-				<h3 className="text-lg font-semibold">Key Moments</h3>
+				<div className="flex items-center gap-2">
+					<h3 className="text-lg font-semibold">Key Moments</h3>
+					<div className="flex items-center gap-1 text-sm text-muted-foreground">
+						<div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+						<span>Generating...</span>
+					</div>
+				</div>
 				<div className="space-y-2">
-					{[...Array(3)].map((_, i) => (
-						<div key={`loading-${i}`} className="p-3 border rounded-lg">
-							<div className="h-4 bg-muted rounded animate-pulse mb-2" />
-							<div className="h-3 bg-muted rounded animate-pulse w-2/3" />
+					{Array.from({ length: 3 }, (_, i) => (
+						<div key={`loading-skeleton-${Date.now()}-${i}`} className="p-3 border rounded-lg bg-muted/30">
+							<div className="flex items-start gap-2">
+								<div className="w-3 h-3 bg-muted rounded-full animate-pulse mt-1 flex-shrink-0" />
+								<div className="flex-1 space-y-2">
+									<div className="h-4 bg-muted rounded animate-pulse" style={{ width: `${85 + (i * 10)}%` }} />
+									<div className="h-3 bg-muted rounded animate-pulse w-1/3" />
+								</div>
+							</div>
 						</div>
 					))}
 				</div>
@@ -50,7 +61,15 @@ export function KeyMoments({ patientId, onMomentClick }: KeyMomentsProps) {
 
 	return (
 		<div className="space-y-3 max-w-full">
-			<h3 className="text-lg font-semibold">Key Moments</h3>
+			<div className="flex items-center gap-2">
+				<h3 className="text-lg font-semibold">Key Moments</h3>
+				{isGenerating && (
+					<div className="flex items-center gap-1 text-sm text-muted-foreground">
+						<div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+						<span>Updating...</span>
+					</div>
+				)}
+			</div>
 
 			{/* First 3 moments */}
 			<div className="space-y-2">
@@ -58,8 +77,11 @@ export function KeyMoments({ patientId, onMomentClick }: KeyMomentsProps) {
 					<Button
 						key={`${moment.desc}-${idx}`}
 						variant="outline"
-						className="w-full text-left justify-start h-auto p-3 flex-col items-start whitespace-normal break-words"
+						className={`w-full text-left justify-start h-auto p-3 flex-col items-start whitespace-normal break-words transition-opacity ${
+							isGenerating ? 'opacity-75' : ''
+						}`}
 						onClick={() => onMomentClick(moment.searchText)}
+						disabled={isGenerating}
 					>
 						<div className="flex items-start gap-2 w-full">
 							<MousePointer className="w-3 h-3 mt-1 flex-shrink-0 text-muted-foreground" />
@@ -91,8 +113,11 @@ export function KeyMoments({ patientId, onMomentClick }: KeyMomentsProps) {
 									<Button
 										key={`${moment.desc}-${idx + 3}`}
 										variant="outline"
-										className="w-full text-left justify-start h-auto p-3 flex-col items-start whitespace-normal break-words"
+										className={`w-full text-left justify-start h-auto p-3 flex-col items-start whitespace-normal break-words transition-opacity ${
+											isGenerating ? 'opacity-75' : ''
+										}`}
 										onClick={() => onMomentClick(moment.searchText)}
+										disabled={isGenerating}
 									>
 										<div className="flex items-start gap-2 w-full">
 											<MousePointer className="w-3 h-3 mt-1 flex-shrink-0 text-muted-foreground" />

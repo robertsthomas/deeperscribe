@@ -13,7 +13,7 @@ DeeperScribe is an AI-powered application that analyzes patient-doctor conversat
 
 ## Live Demo
 
-**[Deployed on Vercel]** - *Coming Soon*
+**[Deployed on Vercel](https://deeperscribe.vercel.app/)** - Live application ready to use
 
 ## Local Setup
 
@@ -26,8 +26,8 @@ DeeperScribe is an AI-powered application that analyzes patient-doctor conversat
 
 1. **Clone the repository**
    ```bash
-   git clone [repository-url]
-   cd deepscribe-thomas
+   git clone git@github.com:robertsthomas/deeperscribe.git
+   cd deeperscribe
    ```
 
 2. **Install dependencies**

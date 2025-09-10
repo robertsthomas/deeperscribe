@@ -2,7 +2,7 @@ import React from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { TranscriptionControls } from '@/components/transcriptions/TranscriptionControls'
-import { TranscriptDisplay, TranscriptDisplaySkeleton } from '@/components/transcriptions/TranscriptDisplay'
+import { TranscriptDisplay } from '@/components/transcriptions/TranscriptDisplay'
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner'
 import { useTranscription } from '@/hooks/useTranscription'
 import { useSettings } from '@/hooks/useSettings'
@@ -72,7 +72,7 @@ function TranscriptBottomArea({ patientId }: { patientId: string | null }) {
         console.log('Creating clinical trials for profile:', patientData?.profile)
         if (patientData?.profile) fetchTrials(patientData.profile)
       }}
-      disabled={isBusy || isGeneratingKeyMoments || alreadyHasTrials || !patientData?.profile}
+      disabled={isBusy || alreadyHasTrials || !patientData?.profile}
       className="w-full max-w-md bg-green-600 hover:bg-green-700 text-white"
       size="lg"
     >
@@ -95,7 +95,9 @@ export function TranscriptArea({ patientId, transcriptRef, highlightTextExternal
     formattedTranscript,
     highlightText,
     transcriptTurns,
-    isBusy,
+    isTranscribing,
+    isFormatting,
+    isExtracting,
     isGeneratingKeyMoments,
     currentTxId,
     fetchTrials,
@@ -132,17 +134,7 @@ export function TranscriptArea({ patientId, transcriptRef, highlightTextExternal
 
   
 
-  // Show loading skeleton when processing and no transcript yet
-  if (isBusy && !currentTranscript.trim()) {
-    return (
-      <div className="h-full p-4">
-        <TranscriptDisplaySkeleton />
-        <div className="mt-4 text-sm text-muted-foreground">
-          {isGeneratingKeyMoments ? 'Generating key moments…' : 'Formatting and analyzing transcript…'}
-        </div>
-      </div>
-    )
-  }
+  
 
   // No transcript - show recording controls
   if (!currentTranscript.trim()) {
@@ -166,12 +158,12 @@ export function TranscriptArea({ patientId, transcriptRef, highlightTextExternal
       <div
         className={cn(
           "h-full overflow-y-auto transition-opacity pb-0",
-          (isBusy || isGeneratingKeyMoments) && "opacity-40 overflow-hidden"
+          (isTranscribing || isFormatting || isExtracting || isGeneratingKeyMoments) && "opacity-50 blur-[1px]"
         )}
-        aria-busy={isBusy || isGeneratingKeyMoments}
-        aria-disabled={isBusy || isGeneratingKeyMoments}
+        aria-busy={isTranscribing || isFormatting || isExtracting || isGeneratingKeyMoments}
+        aria-disabled={isTranscribing || isFormatting || isExtracting || isGeneratingKeyMoments}
       >
-        <TranscriptDisplay />
+        <TranscriptDisplay highlight={activeHighlight} />
         {/* Spacer to prevent scroll content from going behind the fixed bottom bar */}
         <div className="h-20" aria-hidden="true" />
       </div>
@@ -184,15 +176,19 @@ export function TranscriptArea({ patientId, transcriptRef, highlightTextExternal
         <TranscriptBottomArea patientId={patientId} />
       </div>
 
-      {/* Processing overlay - blocks interactions & scrolling */}
-      {(isBusy || isGeneratingKeyMoments) && (
-        <div className="absolute inset-0 z-10">
-          <div className="absolute inset-0 bg-background/30 backdrop-blur-[2px] pointer-events-auto" />
-          <div className="absolute inset-x-0 bottom-4 flex items-center justify-center py-2 pointer-events-none">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground bg-background/80 px-3 py-1 rounded-full shadow-sm">
-              <LoadingSpinner size="sm" />
-              <span>Processing…</span>
-            </div>
+      {(isTranscribing || isFormatting || isExtracting || isGeneratingKeyMoments) && (
+        <div className="absolute inset-0 z-10 pointer-events-none flex items-center justify-center">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-background/80 px-3 py-1 rounded-full shadow-sm border border-border">
+            <LoadingSpinner size="sm" />
+            <span>
+              {isTranscribing
+                ? 'Transcribing…'
+                : isFormatting
+                ? 'Formatting transcript…'
+                : isExtracting
+                ? 'Extracting…'
+                : 'Generating key moments…'}
+            </span>
           </div>
         </div>
       )}

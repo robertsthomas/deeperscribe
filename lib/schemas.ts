@@ -29,6 +29,8 @@ export const ExtractResponseSchema = z.object({
 export const TrialsRequestSchema = z.object({
   patientProfile: PatientProfileSchema,
   maxResults: z.number().min(1).max(50).default(10),
+  // Optional direct fetch by NCT IDs (bypasses search)
+  nctIds: z.array(z.string()).optional(),
 })
 
 // Clinical trial schemas

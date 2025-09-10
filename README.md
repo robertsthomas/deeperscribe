@@ -19,7 +19,7 @@ DeeperScribe is an AI-powered application that analyzes patient-doctor conversat
 
 ### Prerequisites
 - Node.js 18+
-- pnpm (preferred package manager)
+- pnpm
 - OpenAI API key
 
 ### Installation Steps
@@ -40,9 +40,12 @@ DeeperScribe is an AI-powered application that analyzes patient-doctor conversat
    cp env.example .env.local
    ```
    
-   Add your OpenAI API key to `.env.local`:
+   Add your Gemini API Key or OpenAI API key to `.env.local`:
+   Google Generative AI API Key - Required for AI-powered transcript analysis  
+   Get your API key from: https://aistudio.google.com/app/apikey
+   
    ```env
-   OPENAI_API_KEY=your-openai-api-key-here
+   GOOGLE_GENERATIVE_AI_API_KEY=your-openai-api-key-here
    ```
 
 4. **Run the development server**

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { openai } from '@ai-sdk/openai'
+import { google } from '@ai-sdk/google'
 import { generateObject } from 'ai'
 import { z } from 'zod'
 
@@ -32,8 +33,12 @@ Rules:
 
 Transcript:\n${transcript}`
 
+    // Use Gemini if no OpenAI key is available
+    const useGemini = !process.env.OPENAI_API_KEY
+    const model = useGemini ? google('gemini-2.5-pro') : openai('gpt-5-nano')
+
     const { object } = await generateObject({
-      model: openai('gpt-5-nano'),
+      model,
       schema: z.object({ moments: z.array(KeyMomentSchema) }),
       prompt,
     })

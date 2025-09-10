@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import { openai } from '@ai-sdk/openai'
+import { google } from '@ai-sdk/google'
 import { generateObject } from 'ai'
 import { ExtractRequestSchema, PatientProfileSchema } from '@/lib/schemas'
 
@@ -31,8 +32,12 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { transcript } = ExtractRequestSchema.parse(body)
 
+    // Use Gemini if no OpenAI key is available
+    const useGemini = !process.env.OPENAI_API_KEY
+    const model = useGemini ? google('gemini-2.0-flash-exp') : openai('gpt-5-nano')
+
     const result = await generateObject({
-      model: openai('gpt-5-nano'),
+      model,
       prompt: `${extractionPrompt}\n\nTranscript:\n${transcript}`,
       schema: PatientProfileSchema,
     })

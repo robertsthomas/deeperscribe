@@ -1,12 +1,18 @@
 import React from 'react'
 import { useRouter } from 'next/navigation'
 import { Button } from '@/components/ui/button'
-import { FileText } from 'lucide-react'
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger 
+} from '@/components/ui/dropdown-menu'
+import { FileText, ChevronDown } from 'lucide-react'
 import { useTranscription } from '@/hooks/useTranscription'
 import { useSettings } from '@/hooks/useSettings'
 import { usePatientManager } from '@/hooks/usePatientManager'
 import { getPatientDisplayName } from '@/lib/patient-utils'
-import { generateTestTranscript } from '@/lib/constants'
+import { generateTestTranscript, TEST_TRANSCRIPTS } from '@/lib/constants'
  
 
 interface PatientInfoPanelProps {
@@ -31,8 +37,8 @@ export function PatientInfoPanel({ patientId }: PatientInfoPanelProps) {
   const currentTranscript = formattedTranscript || capturedText
 
   // Handle test transcript loading
-  const handleLoadTest = () => {
-    const testText = generateTestTranscript()
+  const handleLoadTest = (condition: keyof typeof TEST_TRANSCRIPTS) => {
+    const testText = generateTestTranscript(condition)
     loadTestTranscript(testText)
   }
 
@@ -54,16 +60,26 @@ export function PatientInfoPanel({ patientId }: PatientInfoPanelProps) {
         </p>
       </div>
 
-      {/* Settings */}
+      {/* Test Transcripts */}
       <div className="space-y-4">
-        <Button
-          onClick={handleLoadTest}
-          variant="outline"
-          className="w-full"
-          disabled={isBusy}
-        >
-          {isBusy ? 'Processing...' : 'Load Test'}
-        </Button>
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="w-full justify-between" disabled={isBusy}>
+              {isBusy ? 'Processing...' : 'Load Test Transcript'}
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-full">
+            {Object.entries(TEST_TRANSCRIPTS).map(([key, { title }]) => (
+              <DropdownMenuItem
+                key={key}
+                onClick={() => handleLoadTest(key as keyof typeof TEST_TRANSCRIPTS)}
+              >
+                {title}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       {/* Clinical Trials - Always Show */}

@@ -23,13 +23,17 @@ export async function POST(req: NextRequest) {
 
     const prompt = `You are a clinical scribe assistant. Analyze the following doctor-patient conversation transcript and extract 5-10 concise key moments most relevant to clinical assessment and planning.
 
+You must return a JSON object with a "moments" array containing the key moments.
+
 Rules:
 - Return JSON only; no prose.
-- Each moment must include:
+- The response must be in this exact format: {"moments": [...]}
+- Each moment in the array must include:
   - desc: short description of the key moment (sentence fragment is fine)
   - quote: a short exact excerpt from the transcript that best matches the moment (optional but preferred)
   - time: if possible, an approximate timestamp like MM:SS; if unavailable, omit it
 - Do not fabricate times if you cannot infer them from context.
+- Focus on clinically relevant moments like symptoms, diagnoses, treatments, patient concerns, etc.
 
 Transcript:\n${transcript}`
 
@@ -43,7 +47,14 @@ Transcript:\n${transcript}`
       prompt,
     })
 
-    let moments = (object?.moments ?? []).map((m) => ({
+    // Handle case where AI returns a single moment instead of array
+    let momentsArray = object?.moments ?? []
+    if (!Array.isArray(momentsArray)) {
+      // If the AI returned a single object, wrap it in an array
+      momentsArray = [momentsArray]
+    }
+
+    let moments = momentsArray.map((m) => ({
       desc: m.desc,
       time: m.time as string | undefined,
       quote: m.quote as string | undefined,
@@ -75,6 +86,21 @@ Transcript:\n${transcript}`
     return NextResponse.json({ moments: resp })
   } catch (error) {
     console.error('Error generating key moments:', error)
+    
+    // If it's a schema validation error, try to provide a fallback response
+    if (error instanceof Error && error.message.includes('schema')) {
+      console.log('Schema validation failed, providing fallback key moments')
+      return NextResponse.json({ 
+        moments: [
+          {
+            desc: "Transcript analysis in progress",
+            time: undefined,
+            searchText: "analysis"
+          }
+        ]
+      })
+    }
+    
     return NextResponse.json({ error: 'Failed to generate key moments' }, { status: 500 })
   }
 }

@@ -9,7 +9,7 @@ import { useSettings } from '@/hooks/useSettings'
 import { usePatientManager } from '@/hooks/usePatientManager'
 import { useAppStore } from '@/lib/store'
 import { cn, isValidTranscript } from '@/lib/utils'
-import { ChevronDown, Search } from 'lucide-react'
+import { Search } from 'lucide-react'
 
 interface TranscriptAreaProps {
   patientId: string | null
@@ -49,20 +49,6 @@ function TranscriptBottomArea({ patientId }: { patientId: string | null }) {
   if (!patientId) return null
   
   const { hasTrials, patient: patientData } = getPatientStatus(patientId)
-  const currentTranscript = (formattedTranscript || capturedText || '')
-  const transcriptLength = currentTranscript.length
-  const hasLongTranscript = transcriptLength > 2000
-  
-  // Show scroll indicator for long transcripts
-  if (hasLongTranscript) {
-    return (
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <ChevronDown className="w-4 h-4 animate-bounce" />
-        <span>Scroll for more content ({Math.round(transcriptLength / 100)} paragraphs)</span>
-      </div>
-    )
-  }
-  
   const patient = patientId ? getPatient(patientId) : undefined
   const alreadyHasTrials = Boolean(currentTxId && patient?.transcriptions?.[currentTxId]?.trials)
 
